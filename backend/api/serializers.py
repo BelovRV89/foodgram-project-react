@@ -60,8 +60,9 @@ class SetPasswordSerializer(serializers.Serializer):
             )
         if (validated_data['current_password']
                 == validated_data['new_password']):
-            raise serializers.ValidationError \
-                ({'new_password': 'Новый пароль должен отличаться от текущего.'})
+            raise serializers.ValidationError(
+                {'new_password': 'Новый пароль должен отличаться от текущего.'}
+            )
         instance.set_password(validated_data['new_password'])
         instance.save()
         return validated_data
@@ -69,8 +70,7 @@ class SetPasswordSerializer(serializers.Serializer):
 
 class Base64ImageField(serializers.ImageField):
     def to_internal_value(self, data):
-        if isinstance(data, str) \
-                and data.startswith('data:image'):
+        if isinstance(data, str) and data.startswith('data:image'):
             format, imgstr = data.split(';base64,')
             ext = format.split('/')[-1]
             data = ContentFile(
@@ -99,7 +99,8 @@ class SubscriptionsSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ('email', 'id', 'username',
-                  'first_name', 'last_name', 'recipes', 'recipes_count', 'is_subscribed')
+                  'first_name', 'last_name', 'recipes',
+                  'recipes_count', 'is_subscribed')
 
     def get_is_subscribed(self, obj):
         user = self.context.get('request').user
@@ -140,11 +141,10 @@ class SubscribeAuthorSerializer(serializers.ModelSerializer):
         return obj
 
     def get_is_subscribed(self, obj):
-        return (
-                self.context.get('request').user.is_authenticated
+        return (self.context.get('request').user.is_authenticated
                 and Subscribe.objects.filter(user=self.context['request'].user,
                                              author=obj).exists()
-        )
+                )
 
     def get_recipes_count(self, obj):
         return obj.recipes.count()
@@ -178,7 +178,8 @@ class RecipeIngredientSerializer(serializers.ModelSerializer):
 class RecipeReadSerializer(serializers.ModelSerializer):
     tags = TagSerializer(many=True, read_only=True)
     author = UserReadSerializer(read_only=True)
-    ingredients = RecipeIngredientSerializer(many=True, read_only=True, source='recipes')
+    ingredients = RecipeIngredientSerializer(
+        many=True, read_only=True, source='recipes')
     is_favorited = serializers.SerializerMethodField()
     is_in_shopping_cart = serializers.SerializerMethodField()
     image = Base64ImageField(
@@ -216,7 +217,8 @@ class RecipeIngredientCreateSerializer(serializers.ModelSerializer):
 
 
 class RecipeCreateSerializer(serializers.ModelSerializer):
-    tags = serializers.PrimaryKeyRelatedField(many=True, queryset=Tag.objects.all())
+    tags = serializers.PrimaryKeyRelatedField(
+        many=True, queryset=Tag.objects.all())
     author = UserReadSerializer(read_only=True)
     id = serializers.ReadOnlyField()
     ingredients = RecipeIngredientCreateSerializer(many=True)
@@ -224,7 +226,8 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Recipe
-        fields = ('id', 'ingredients', 'tags', 'image', 'name', 'text', 'cooking_time', 'author')
+        fields = ('id', 'ingredients', 'tags',
+                  'image', 'name', 'text', 'cooking_time', 'author')
         extra_kwargs = {
             'ingredients': {'required': True, 'allow_blank': False},
             'tags': {'required': True, 'allow_blank': False},
@@ -235,17 +238,20 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
 
     def validate(self, attrs):
         if 'cooking_time' not in attrs or attrs['cooking_time'] is None:
-            raise serializers.ValidationError('cooking_time - Обязательное поле.')
+            raise serializers.ValidationError(
+                'cooking_time - Обязательное поле.')
 
         if not attrs.get('tags'):
             raise serializers.ValidationError('Нужно указать минимум 1 тег.')
 
         if not attrs.get('ingredients'):
-            raise serializers.ValidationError('Нужно указать минимум 1 ингредиент.')
+            raise serializers.ValidationError(
+                'Нужно указать минимум 1 ингредиент.')
 
         ingredient_ids = [item['id'] for item in attrs.get('ingredients')]
         if len(ingredient_ids) != len(set(ingredient_ids)):
-            raise serializers.ValidationError('Ингредиенты должны быть уникальны.')
+            raise serializers.ValidationError(
+                'Ингредиенты должны быть уникальны.')
 
         return attrs
 
@@ -264,7 +270,8 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         tags = validated_data.pop('tags')
         ingredients = validated_data.pop('ingredients')
-        recipe = Recipe.objects.create(author=self.context['request'].user, **validated_data)
+        recipe = Recipe.objects.create(author=self.context['request'].user,
+                                       **validated_data)
         self.tags_and_ingredients_set(recipe, tags, ingredients)
         return recipe
 
@@ -273,7 +280,8 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
         instance.image = validated_data.get('image', instance.image)
         instance.name = validated_data.get('name', instance.name)
         instance.text = validated_data.get('text', instance.text)
-        instance.cooking_time = validated_data.get('cooking_time', instance.cooking_time)
+        instance.cooking_time = validated_data.get('cooking_time',
+                                                   instance.cooking_time)
         tags = validated_data.pop('tags')
         ingredients = validated_data.pop('ingredients')
         RecipeIngredient.objects.filter(
