@@ -4,7 +4,6 @@ from django.db import models
 from users.models import User
 
 
-
 class Ingredient(models.Model):
     name = models.CharField(
         'Название ингредиента', max_length=200
