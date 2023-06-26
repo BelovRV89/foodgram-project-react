@@ -1,13 +1,20 @@
-import base64
-
 from django.contrib.auth.password_validation import validate_password
-from django.core.files.base import ContentFile
 from django.db import transaction
-from djoser.serializers import UserCreateSerializer, UserSerializer
-from recipes.models import (Favorite, Ingredient, Recipe, RecipeIngredient,
-                            ShoppingCart, Tag)
 from rest_framework import serializers
+
+from djoser.serializers import UserCreateSerializer, UserSerializer
+
+from recipes.models import (
+    Favorite,
+    Ingredient,
+    Recipe,
+    RecipeIngredient,
+    ShoppingCart,
+    Tag,
+)
 from users.models import Subscribe, User
+
+from api.fields import Base64ImageField
 
 
 class UserReadSerializer(UserSerializer):
@@ -66,16 +73,6 @@ class SetPasswordSerializer(serializers.Serializer):
         instance.set_password(validated_data['new_password'])
         instance.save()
         return validated_data
-
-
-class Base64ImageField(serializers.ImageField):
-    def to_internal_value(self, data):
-        if isinstance(data, str) and data.startswith('data:image'):
-            format, imgstr = data.split(';base64,')
-            ext = format.split('/')[-1]
-            data = ContentFile(
-                base64.b64decode(imgstr), name=f'file.{ext}')
-        return super().to_internal_value(data)
 
 
 class RecipeSerializer(serializers.ModelSerializer):
@@ -261,7 +258,7 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
         RecipeIngredient.objects.bulk_create([
             RecipeIngredient(
                 recipe=recipe,
-                ingredient=Ingredient.objects.get(pk=ingredient['id']),
+                ingredient_id=ingredient['id'],
                 amount=ingredient['amount']
             ) for ingredient in ingredients
         ])
@@ -277,11 +274,7 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
 
     @transaction.atomic
     def update(self, instance, validated_data):
-        instance.image = validated_data.get('image', instance.image)
-        instance.name = validated_data.get('name', instance.name)
-        instance.text = validated_data.get('text', instance.text)
-        instance.cooking_time = validated_data.get('cooking_time',
-                                                   instance.cooking_time)
+        instance = super().update(instance, validated_data)
         tags = validated_data.pop('tags')
         ingredients = validated_data.pop('ingredients')
         RecipeIngredient.objects.filter(
@@ -289,7 +282,6 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
             ingredient__in=instance.ingredients.all()
         ).delete()
         self.tags_and_ingredients_set(instance, tags, ingredients)
-        instance.save()
         return instance
 
     def to_representation(self, instance):
