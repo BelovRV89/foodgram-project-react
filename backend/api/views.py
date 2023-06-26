@@ -151,20 +151,20 @@ class RecipeViewSet(viewsets.ModelViewSet):
         return self.toggle_favorite_or_cart(
             request, recipe, RecipeSerializer, request.user.shopping_cart)
 
+    @action(detail=False, methods=['get'],
+            permission_classes=(IsAuthenticated,))
+    def download_shopping_cart(self, request):
+        user = request.user
+        ingredients = user.shopping_cart.values_list(
+            'ingredients__name', 'ingredients__measurement_unit').annotate(
+            total_amount=Sum('recipe_ingredients__amount'))
+        wishlist = []
+        for item in ingredients:
+            wishlist.append(
+                f'{item[0]} - {item[2]} {item[1]}'
+            )
 
-@action(detail=False, methods=['get'],
-        permission_classes=(IsAuthenticated,))
-def download_shopping_cart(self, request):
-    user = request.user
-    ingredients = user.shopping_cart.values_list(
-        'ingredients__name', 'ingredients__measurement_unit').annotate(
-        total_amount=Sum('recipe_ingredients__amount'))
-    wishlist = []
-    for item in ingredients:
-        wishlist.append(
-            f'{item[0]} - {item[2]} {item[1]}'
-        )
-    wishlist = '\n'.join(wishlist)
-    response = HttpResponse(wishlist, 'Content-Type: text/plain')
-    response['Content-Disposition'] = 'attachment; filename="wishlist.txt"'
-    return response
+        wishlist = '\n'.join(wishlist)
+        response = HttpResponse(wishlist, 'Content-Type: text/plain')
+        response['Content-Disposition'] = 'attachment; filename="wishlist.txt"'
+        return response
