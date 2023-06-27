@@ -7,23 +7,16 @@ from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 
-from recipes.models import Favorite, Ingredient, Recipe, Tag
-from users.models import Subscribe, User
 from .filters import RecipeFilter
 from .pagination import CustomPaginator
 from .permissions import IsAuthorOrAdminOrReadOnly
-from .serializers import (
-    IngredientSerializer,
-    RecipeCreateSerializer,
-    RecipeReadSerializer,
-    RecipeSerializer,
-    SetPasswordSerializer,
-    SubscribeAuthorSerializer,
-    SubscriptionsSerializer,
-    TagSerializer,
-    UserCreateSerializer,
-    UserReadSerializer,
-)
+from .serializers import (IngredientSerializer, RecipeCreateSerializer,
+                          RecipeReadSerializer, RecipeSerializer,
+                          SetPasswordSerializer, SubscribeAuthorSerializer,
+                          SubscriptionsSerializer, TagSerializer,
+                          UserCreateSerializer, UserReadSerializer)
+from recipes.models import Favorite, Ingredient, Recipe, Tag
+from users.models import Subscribe, User
 
 
 class UserViewSet(mixins.CreateModelMixin, mixins.ListModelMixin,
