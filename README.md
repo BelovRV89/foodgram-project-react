@@ -34,31 +34,10 @@ sudo apt install docker docker-compose
 
 Развертывание на локальном сервере
 
-Создайте файл /infra/.env. Шаблон для заполнения файла нахоится в /infra/.env.example.
+Создайте файл .env Шаблон для заполнения файла нахоится в .env.example.
 Выполните команду docker-compose up -d --buld.
 Выполните миграции docker-compose exec backend python manage.py migrate.
 Создайте суперюзера docker-compose exec backend python manage.py createsuperuser.
 Соберите статику docker-compose exec backend python manage.py collectstatic --no-input.
 Заполните базу ингредиентами docker-compose exec backend python manage.py import_data.
-Для корректного создания рецепта через фронт, надо создать пару тегов в базе через админку.
 Документация к API находится по адресу: http://localhost/api/docs/redoc.html.
-
-Установка проекта на сервер
-
-Скопируйте файлы из папки /server/ на ваш сервер и .env файл из директории /backend/:
-scp -r data/ <username>@<server_ip>:/home/<username>/
-scp backend/.env <username>@<server_ip>:/home/<username>/
-Зайдите на сервер и настройте server_name в конфиге nginx на ваше доменное имя:
-vim nginx.conf
-Настройка проекта
-
-Запустите docker compose:
-docker-compose up -d
-Примените миграции:
-docker-compose exec backend python manage.py migrate
-Заполните базу начальными данными (необязательно):
-docker-compose exec backend python manange.py loaddata data/fixtures.json
-Создайте администратора:
-docker-compose exec backend python manage.py createsuperuser
-Соберите статику:
-docker-compose exec backend python manage.py collectstatic
