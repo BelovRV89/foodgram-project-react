@@ -85,8 +85,8 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     needs:
-      - build_and_push_to_docker_hub
-      - build_frontend_and_push_to_docker_hub
+      - build_push_backend_to_DockerHub
+      - build_push_frontend_to_DockerHub
     steps:
       - name: Checkout repo
         uses: actions/checkout@v3
