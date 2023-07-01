@@ -2,19 +2,20 @@ import csv
 import os
 import random
 
-from faker import Faker
-from rest_framework.authtoken.models import Token
 from django.conf import settings
+from django.contrib.auth.hashers import make_password
 from django.core.files.images import ImageFile
 from django.core.management.base import BaseCommand
-from django.contrib.auth.hashers import make_password
+from faker import Faker
+from rest_framework.authtoken.models import Token
 
-from recipes.models import Ingredient, Tag, Recipe, RecipeIngredient
+from recipes.models import Ingredient, Recipe, RecipeIngredient, Tag
 from users.models import User
 
 fake = Faker(['ru_RU'])
 
 DATA_DIR = os.path.join(settings.BASE_DIR, 'data')
+PHOTO_PATH = os.path.join(DATA_DIR, 'photo')
 
 
 class Command(BaseCommand):
@@ -44,7 +45,6 @@ class Command(BaseCommand):
         if not User.objects.filter(email__startswith='user').exists():
             all_ingredients = Ingredient.objects.all()
             all_tags = Tag.objects.all()
-            PHOTO_PATH = os.path.join(DATA_DIR, 'photo')
 
             for i in range(4):
                 user, created = User.objects.get_or_create(
