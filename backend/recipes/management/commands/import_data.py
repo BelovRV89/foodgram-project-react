@@ -13,10 +13,9 @@ from rest_framework.authtoken.models import Token
 from recipes.models import Ingredient, Recipe, RecipeIngredient, Tag
 from users.models import User
 
-fake = Faker(['ru_RU'])
+fake = Faker(['ru_RU', ])
 
 DATA_DIR = os.path.join(settings.BASE_DIR, 'data')
-PHOTO_PATH = os.path.join(DATA_DIR, 'photo')
 
 
 class Command(BaseCommand):
@@ -46,28 +45,30 @@ class Command(BaseCommand):
         if not User.objects.filter(email__startswith='user').exists():
             all_ingredients = Ingredient.objects.all()
             all_tags = Tag.objects.all()
+            photo_path = os.path.join(DATA_DIR, 'photo')
+            image_cycle = cycle(range(1, 9))
 
             for i in range(4):
-                user, created = User.objects.get_or_create(
+                user, created = User.objects.update_or_create(
                     email=f'user{i}@example.com',
                     defaults={
                         'email': f'user{i}@example.com',
                         'username': f'User{i}',
                         'first_name': fake.first_name_male(),
                         'last_name': fake.last_name_male(),
-                        'password': make_password('password1'),
+                        'password': make_password('p@ssw0rd1'),
                     },
                 )
-                token, created = Token.objects.get_or_create(user=user)
+                token, created = Token.objects.update_or_create(user=user)
                 for j in range(2):
-                    ingredients = random.sample(list(all_ingredients), 4)
-                    tags = random.sample(list(all_tags), 2)
-                    image_cycle = cycle(range(1, 9))
+                    ingredients = [random.choice(all_ingredients) for _ in
+                                   range(4)]
+                    tags = [random.choice(all_tags) for _ in range(2)]
 
                     image_file_path = os.path.join(
-                        PHOTO_PATH, f'{next(image_cycle)}.jpg')
+                        photo_path, f'{next(image_cycle)}.jpg')
                     with open(image_file_path, 'rb') as image_file:
-                        recipe = Recipe(
+                        recipe = Recipe.objects.create(
                             author=user,
                             name=fake.sentence(
                                 nb_words=2, variable_nb_words=False),
@@ -76,19 +77,18 @@ class Command(BaseCommand):
                             cooking_time=random.randint(20, 120),
                             image=ImageFile(image_file, name=f'{j + 1}.jpg'),
                         )
-                        recipe.save()
                         RecipeIngredient.objects.bulk_create(
                             [
                                 RecipeIngredient(
                                     recipe=recipe,
-                                    ingredient=ingredient,
+                                    ingredient_id=ingredient.id,
                                     amount=random.randint(1, 100)
                                 ) for ingredient in ingredients
                             ]
                         )
                         recipe.ingredients.set(ingredients)
                         recipe.tags.set(tags)
-
+                        recipe.save()
         else:
             print("Demo users already exist. Skipping demo data creation.")
 
