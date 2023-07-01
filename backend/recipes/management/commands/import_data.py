@@ -1,6 +1,7 @@
 import csv
 import os
 import random
+from itertools import cycle
 
 from django.conf import settings
 from django.contrib.auth.hashers import make_password
@@ -61,9 +62,10 @@ class Command(BaseCommand):
                 for j in range(2):
                     ingredients = random.sample(list(all_ingredients), 4)
                     tags = random.sample(list(all_tags), 2)
+                    image_cycle = cycle(range(1, 9))
 
                     image_file_path = os.path.join(
-                        PHOTO_PATH, f'{j + 1}.jpg')
+                        PHOTO_PATH, f'{next(image_cycle)}.jpg')
                     with open(image_file_path, 'rb') as image_file:
                         recipe = Recipe(
                             author=user,
