@@ -15,7 +15,7 @@ from .serializers import (IngredientSerializer, RecipeCreateSerializer,
                           SetPasswordSerializer, SubscribeAuthorSerializer,
                           SubscriptionsSerializer, TagSerializer,
                           UserCreateSerializer, UserReadSerializer)
-from recipes.models import Favorite, Ingredient, Recipe, Tag
+from recipes.models import Favorite, Ingredient, Recipe, Tag, ShoppingCart, RecipeIngredient
 from users.models import Subscribe, User
 
 
@@ -142,15 +142,20 @@ class RecipeViewSet(viewsets.ModelViewSet):
     def shopping_cart(self, request, pk=None):
         recipe = get_object_or_404(Recipe, id=pk)
         return self.toggle_favorite_or_cart(
-            request, recipe, RecipeSerializer, request.user.shopping_cart)
+            request, recipe, RecipeSerializer, ShoppingCart.objects)
 
     @action(detail=False, methods=['get'],
             permission_classes=(IsAuthenticated,))
     def download_shopping_cart(self, request):
-        user = request.user
-        ingredients = user.shopping_cart.values_list(
-            'ingredients__name', 'ingredients__measurement_unit').annotate(
-            total_amount=Sum('recipe_ingredients__amount'))
+        ingredients = (
+            RecipeIngredient.objects
+            .filter(recipe__shopping_recipe__user=request.user)
+            .values('ingredient')
+            .annotate(total_amount=Sum('amount'))
+            .values_list('ingredient__name', 'total_amount',
+                         'ingredient__measurement_unit')
+        )
+
         wishlist = []
         for item in ingredients:
             wishlist.append(
