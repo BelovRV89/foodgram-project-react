@@ -43,3 +43,5 @@ sudo apt install docker docker-compose
 Документация к API находится по адресу: http://localhost/api/docs/redoc.html.
 
 Яндекс давай-до-свидания!
+Проэкт работа на https://belovnumber3.ddns.net
+Админ логин:admin@admin.ru, пароль:admin
