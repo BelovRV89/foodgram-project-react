@@ -13,12 +13,12 @@ services:
     volumes:
       - db_value:/var/lib/postgresql/data/
     env_file:
-      - ../.env
+      - .env
 
   backend:
     build:
-      context: ../backend
-      dockerfile: Dockerfile
+      context: backend
+      dockerfile: backend/Dockerfile
     restart: always
     volumes:
       - static:/app/static/
@@ -26,13 +26,13 @@ services:
     depends_on:
       - db
     env_file:
-      - ../.env
+      - .env
 
   frontend:
     container_name: foodgram-front
     build:
-      context: ../frontend
-      dockerfile: Dockerfile
+      context: frontend
+      dockerfile: frontend/Dockerfile
     volumes:
       - ../frontend/:/app/result_build/
     depends_on:
