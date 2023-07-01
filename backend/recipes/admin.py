@@ -17,42 +17,16 @@ class TagAdmin(admin.ModelAdmin):
     search_fields = ('name', 'color')
 
 
-class IngredientsInline(admin.TabularInline):
-    model = models.RecipeIngredient
-    extra = 2
-
-
 @admin.register(models.Recipe)
 class RecipeAdmin(admin.ModelAdmin):
-    list_display = (
-        "name",
-        "author",
-        "get_image",
-        "count_favorites",
-    )
-    fields = (
-        (
-            "name",
-            "cooking_time",
-        ),
-        (
-            "author",
-            "tags",
-        ),
-        ("text",),
-        ("image",),
-    )
-    raw_id_fields = ("author",)
-    search_fields = (
-        "name",
-        "author__username",
-        "tags__name",
-    )
-    list_filter = ("name", "author__username", "tags__name")
+    list_display = ('pk', 'name', 'author', 'count_favorites')
+    list_filter = ('name', 'author', 'tags')
+    readonly_fields = ('count_favorites',)
+    empty_value_display = '-пусто-'
 
-    inlines = (IngredientsInline,)
-    save_on_top = True
-    empty_value_display = "не указано"
+    def count_favorites(self, obj):
+        return obj.favorite_recipe.count()
+    count_favorites.short_description = 'Количество добавлений в избранное'
 
 
 @admin.register(models.RecipeIngredient)
