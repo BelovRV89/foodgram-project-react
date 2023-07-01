@@ -42,4 +42,4 @@ sudo apt install docker docker-compose
 Заполните базу ингредиентами docker-compose exec backend python manage.py import_data.
 Документация к API находится по адресу: http://localhost/api/docs/redoc.html.
 
-Яндекс давай-до-свидания
+Яндекс давай-до-свидания!
