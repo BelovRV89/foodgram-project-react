@@ -1,7 +1,6 @@
 from django.contrib import admin
 
 from . import models
-from .models import Recipe
 
 
 @admin.register(models.Ingredient)
@@ -20,18 +19,40 @@ class TagAdmin(admin.ModelAdmin):
 
 class IngredientsInline(admin.TabularInline):
     model = models.RecipeIngredient
-    extra = 1
+    extra = 2
 
 
-@admin.register(Recipe)
+@admin.register(models.Recipe)
 class RecipeAdmin(admin.ModelAdmin):
-    list_display = ('name', 'author', 'text', 'added_to_favorite')
-    list_filter = ('author', 'name', 'tags')
-    inlines = (IngredientsInline,)
+    list_display = (
+        "name",
+        "author",
+        "get_image",
+        "count_favorites",
+    )
+    fields = (
+        (
+            "name",
+            "cooking_time",
+        ),
+        (
+            "author",
+            "tags",
+        ),
+        ("text",),
+        ("image",),
+    )
+    raw_id_fields = ("author",)
+    search_fields = (
+        "name",
+        "author__username",
+        "tags__name",
+    )
+    list_filter = ("name", "author__username", "tags__name")
 
-    @staticmethod
-    def added_to_favorite(obj):
-        return obj.favorite.count()
+    inlines = (IngredientsInline,)
+    save_on_top = True
+    empty_value_display = "не указано"
 
 
 @admin.register(models.RecipeIngredient)
