@@ -1,4 +1,4 @@
-from django.core.validators import RegexValidator
+from django.core.validators import MinValueValidator, RegexValidator
 from django.db import models
 
 from users.models import User
@@ -68,7 +68,8 @@ class Recipe(models.Model):
         'Tag', verbose_name='Теги'
     )
     cooking_time = models.IntegerField(
-        'Время приготовления в минутах'
+        'Время приготовления в минутах',
+        validators=[MinValueValidator(1)]
     )
     author = models.ForeignKey(
         User, on_delete=models.CASCADE, related_name='recipes',
@@ -98,6 +99,7 @@ class RecipeIngredient(models.Model):
     )
     amount = models.IntegerField(
         'Количество',
+        validators=[MinValueValidator(1)]
     )
 
     class Meta:
